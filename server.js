@@ -17,8 +17,14 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "https://chat-client-ten-iota.vercel.app",
   "https://chat-client-4dvz9sk2p-bhautiks-projects-e9693610.vercel.app",
+  "https://chat-client-iota-opal.vercel.app", 
+  "http://chat-client-589qyt1mz-bhautiks-projects-e9693610.vercel.app",
+  "https://chat-client-git-main-bhautiks-projects-e9693610.vercel.app",
+
+  // ← Add this line
   "http://localhost:5173",
 ];
+
 
 // ✅ Setup CORS middleware for Express
 app.use(
