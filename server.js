@@ -10,15 +10,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST'],
-    credentials: true,
-  }
-});
-
-
+// ✅ Move this ABOVE where it's used
 const allowedOrigins = [
   "https://chat-client-ten-iota.vercel.app",
   "https://chat-client-4dvz9sk2p-bhautiks-projects-e9693610.vercel.app",
@@ -37,19 +29,26 @@ const corsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 };
 
+// ✅ Use CORS for Express
 app.use(cors(corsOptions));
-
-
 app.use(express.json());
 
+// ✅ Use CORS for Socket.io
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+// ✅ DB & Routes
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => {
-    console.log("MongoDB connected");
-  })
+  .then(() => console.log("MongoDB connected"))
   .catch((err) => {
     console.error("MongoDB connection error:", err.message);
     process.exit(1);
@@ -75,8 +74,6 @@ io.on("connection", (socket) => {
       });
     }
   });
-
-  socket.on("disconnect", () => {});
 });
 
 app.get("/", (req, res) => {
