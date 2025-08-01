@@ -54,7 +54,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {});
 });
 
-app.get('/', (res, res) => {
+app.get('/', (req, res) => {
   res.send('server test')
 })
 
