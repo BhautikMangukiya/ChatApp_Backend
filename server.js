@@ -12,21 +12,29 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || '*',
+    origin: [
+      process.env.CLIENT_URL,
+      'https://chat-client-jglr6b1t3-bhautiks-projects-e9693610.vercel.app',
+      'http://localhost:5173'
+    ],
     methods: ['GET', 'POST']
   }
 });
 
+
 const corsOptions = {
   origin: [
-    'http://chat-client-ten-iota.vercel.app/', // ✅ Vercel live link (adjust if different)
-    'http://localhost:5173',      
-    
-    // ✅ Local dev
+    'https://chat-client-ten-iota.vercel.app',  // ✅ no trailing slash
+    'https://chat-client-jglr6b1t3-bhautiks-projects-e9693610.vercel.app', // ✅ Add Vercel preview domain
+    'http://localhost:5173'
   ],
   methods: ['GET', 'POST'],
   credentials: true
 };
+
+app.use(cors(corsOptions));
+
+
 
 app.use(cors(corsOptions));
 app.use(express.json());
