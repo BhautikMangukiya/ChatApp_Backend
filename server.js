@@ -17,7 +17,18 @@ const io = new Server(server, {
   }
 });
 
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'http://chat-client-ten-iota.vercel.app/', // ✅ Vercel live link (adjust if different)
+    'http://localhost:5173',      
+    
+    // ✅ Local dev
+  ],
+  methods: ['GET', 'POST'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI, {
