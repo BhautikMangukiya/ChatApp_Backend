@@ -18,10 +18,10 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "https://chat-app-client-beryl-five.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-app-client-cnvz786wy-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-app-client-a4e2sbgnk-bhautiks-projects-e9693610.vercel.app", // ✅ New one
-  "http://localhost:5173",
+  "https://chat-app-client-777434ay5-bhautiks-projects-e9693610.vercel.app",
+  "http://localhost:5173", // for local development
 ];
+
 
 
 // 🛡️ Apply CORS settings for Express
