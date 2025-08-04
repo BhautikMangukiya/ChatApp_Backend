@@ -17,22 +17,18 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "https://chat-app-client-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-app-client-76n2gfh2c-bhautiks-projects-e9693610.vercel.app", // ✅ FIXED
-  "http://chat-client-589qyt1mz-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-client-git-main-bhautiks-projects-e9693610.vercel.app",
-  "http://localhost:5173"
+  "https://chat-app-client-76n2gfh2c-bhautiks-projects-e9693610.vercel.app",
+  "http://localhost:5173",
 ];
 
-
-
-// ✅ Setup CORS middleware for Express
+// ✅ CORS middleware
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error("❌ Not allowed by CORS: " + origin));
       }
     },
     credentials: true,
@@ -40,10 +36,9 @@ app.use(
   })
 );
 
-// ✅ Parse JSON requests
 app.use(express.json());
 
-// ✅ Connect to MongoDB
+// ✅ MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -51,16 +46,15 @@ mongoose
   })
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
+    console.error("❌ MongoDB error:", err.message);
     process.exit(1);
   });
 
-// ✅ Load API routes
+// ✅ API routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/chatroom", require("./routes/chatroom"));
 app.use("/api/message", require("./routes/message"));
 
-// ✅ Default health check route
 app.get("/", (req, res) => {
   res.send("✅ Server is running");
 });
@@ -93,7 +87,7 @@ io.on("connection", (socket) => {
         timestamp: new Date().toISOString(),
       };
       io.to(roomId).emit("receiveMessage", message);
-      console.log("📤 Message sent to room:", roomId);
+      console.log("📤 Message to room:", roomId);
     }
   });
 
@@ -105,5 +99,5 @@ io.on("connection", (socket) => {
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`🚀 Server listening on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
