@@ -6,25 +6,21 @@ const dotenv = require("dotenv");
 const { Server } = require("socket.io");
 const path = require("path");
 
-dotenv.config(); // Load .env config
+dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 
-// ✅ ALLOWED CLIENT ORIGINS (include all active Vercel URLs)
+// ✅ Include all active Vercel deployments here
 const allowedOrigins = [
   "https://chat-app-client-beryl-five.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-cnvz786wy-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-76n2gfh2c-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-app-client-bjyamuy2j-bhautiks-projects-e9693610.vercel.app", // newly deployed client
+  "https://chat-app-client-bjyamuy2j-bhautiks-projects-e9693610.vercel.app"
 ];
 
-// ✅ Global middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// ✅ CORS middleware
+// ✅ Full CORS support including preflight
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -34,60 +30,63 @@ app.use(cors({
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-// ✅ MongoDB Connection
+app.options("*", cors()); // Preflight
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ✅ Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("✅ MongoDB connected"))
-.catch((err) => console.error("❌ MongoDB error:", err));
-
-// ✅ Import Routes
-const authRoutes = require("./routes/auth");
-const chatroomRoutes = require("./routes/chatroom");
-const messageRoutes = require("./routes/message");
+  useUnifiedTopology: true
+}).then(() => {
+  console.log("✅ MongoDB connected");
+}).catch(err => {
+  console.error("❌ MongoDB connection error:", err);
+});
 
 // ✅ API Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/chatroom", chatroomRoutes);
-app.use("/api/message", messageRoutes);
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/chatroom", require("./routes/chatroom"));
+app.use("/api/message", require("./routes/message"));
 
 // ✅ Health Check
 app.get("/", (req, res) => {
-  res.send("🚀 Chat App Backend is Running");
+  res.send("🚀 DuoChat Backend is running");
 });
 
-// ✅ Socket.IO Setup
+// ✅ Socket.IO server
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    credentials: true,
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  transports: ["websocket", "polling"]
 });
 
 io.on("connection", (socket) => {
-  console.log("🟢 New connection:", socket.id);
+  console.log("🟢 New Socket.IO connection:", socket.id);
 
   socket.on("joinRoom", (roomId) => {
     socket.join(roomId);
-    console.log(`📦 ${socket.id} joined room ${roomId}`);
+    console.log(`📦 User ${socket.id} joined room ${roomId}`);
   });
 
   socket.on("sendMessage", (data) => {
-    // Broadcast to the same room
     io.to(data.roomId).emit("receiveMessage", data);
   });
 
   socket.on("disconnect", () => {
-    console.log("🔴 Disconnected:", socket.id);
+    console.log("🔴 Socket.IO disconnected:", socket.id);
   });
 });
 
-// ✅ Server Start
+// ✅ Start Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
