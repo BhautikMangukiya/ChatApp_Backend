@@ -19,7 +19,7 @@ const allowedOrigins = [
   "https://chat-app-client-45642a0ct-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-app-client-76udmmtmy-bhautiks-projects-e9693610.vercel.app/login"
+  "https://chat-app-client-76udmmtmy-bhautiks-projects-e9693610.vercel.app"
 
 ];
 
