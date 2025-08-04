@@ -15,9 +15,9 @@ const server = http.createServer(app);
 
 // 🔐 Allowed frontend origins
 const allowedOrigins = [
-  "https://chat-client-ten-iota.vercel.app",
-  "https://chat-client-4dvz9sk2p-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-client-iota-opal.vercel.app", 
+  "chat-app-client-bhautiks-projects-e9693610.vercel.app",
+  "chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
+  "chat-app-client-5jni88g2s-bhautiks-projects-e9693610.vercel.app", 
   "http://chat-client-589qyt1mz-bhautiks-projects-e9693610.vercel.app",
   "https://chat-client-git-main-bhautiks-projects-e9693610.vercel.app",
 
