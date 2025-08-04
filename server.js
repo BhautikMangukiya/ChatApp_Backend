@@ -50,9 +50,15 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 // ✅ API Routes
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/chatroom", require("./routes/chatroom"));
-app.use("/api/message", require("./routes/message"));
+try {
+  app.use("/api/auth", require("./routes/auth"));
+  app.use("/api/chatroom", require("./routes/chatroom"));
+  app.use("/api/message", require("./routes/message"));
+} catch (err) {
+  console.error("🚨 Route error in file:", err);
+  throw err;
+}
+
 
 // ✅ Health Check
 app.get("/", (req, res) => {
