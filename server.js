@@ -17,13 +17,12 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "https://chat-app-client-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
-  "chat-app-client-76n2gfh2c-bhautiks-projects-e9693610.vercel.app", 
+  "https://chat-app-client-76n2gfh2c-bhautiks-projects-e9693610.vercel.app", // ✅ FIXED
   "http://chat-client-589qyt1mz-bhautiks-projects-e9693610.vercel.app",
   "https://chat-client-git-main-bhautiks-projects-e9693610.vercel.app",
-
-  // ← Add this line
-  "http://localhost:5173",
+  "http://localhost:5173"
 ];
+
 
 
 // ✅ Setup CORS middleware for Express
