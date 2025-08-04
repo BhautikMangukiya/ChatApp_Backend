@@ -7,26 +7,22 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const { Server } = require("socket.io");
 
-// Load env variables
+// Load environment variables from .env file
 dotenv.config();
 
+// Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
 
-// 🔐 Allowed frontend origins
+// ✅ Updated allowed frontend origins
 const allowedOrigins = [
-  "https://chat-client-ten-iota.vercel.app",
-  "https://chat-client-4dvz9sk2p-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-client-iota-opal.vercel.app", 
-  "http://chat-client-589qyt1mz-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-client-git-main-bhautiks-projects-e9693610.vercel.app",
-
-  // ← Add this line
-  "http://localhost:5173",
+  "https://chat-app-client-beryl-five.vercel.app",
+  "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
+  "https://chat-app-client-cnvz786wy-bhautiks-projects-e9693610.vercel.app",
+  "http://localhost:5173", // Local development
 ];
 
-
-// ✅ Setup CORS middleware for Express
+// 🛡️ Apply CORS settings for Express
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -41,10 +37,10 @@ app.use(
   })
 );
 
-// ✅ Parse JSON requests
+// 📦 Middleware to parse JSON
 app.use(express.json());
 
-// ✅ Connect to MongoDB
+// 🌐 MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -56,17 +52,17 @@ mongoose
     process.exit(1);
   });
 
-// ✅ Load API routes
+// 📂 API routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/chatroom", require("./routes/chatroom"));
 app.use("/api/message", require("./routes/message"));
 
-// ✅ Default health check route
+// 🩺 Health check
 app.get("/", (req, res) => {
   res.send("✅ Server is running");
 });
 
-// ✅ Setup Socket.IO
+// 🔌 Setup Socket.IO server with matching CORS settings
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -75,8 +71,9 @@ const io = new Server(server, {
   },
 });
 
+// 📡 Real-time communication via Socket.IO
 io.on("connection", (socket) => {
-  console.log("🔌 New client connected:", socket.id);
+  console.log("🔌 Client connected:", socket.id);
 
   socket.on("joinRoom", (roomId) => {
     if (roomId) {
@@ -94,7 +91,7 @@ io.on("connection", (socket) => {
         timestamp: new Date().toISOString(),
       };
       io.to(roomId).emit("receiveMessage", message);
-      console.log("📤 Message sent to room:", roomId);
+      console.log("📤 Sent message to room:", roomId);
     }
   });
 
@@ -103,8 +100,8 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ Start server
+// 🚀 Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`🚀 Server listening on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
