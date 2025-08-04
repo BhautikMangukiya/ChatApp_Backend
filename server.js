@@ -13,6 +13,7 @@ const server = http.createServer(app);
 
 // ✅ List of allowed frontend origins (Vercel deployments)
 const allowedOrigins = [
+  "https://chat-app-client-beryl-five.vercel.app",
   "https://chat-app-client-jc6cd3cph-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-bhautiks-projects-e9693610.vercel.app",
