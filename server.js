@@ -6,15 +6,16 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const { Server } = require("socket.io");
+const Message = require("./models/Message");
 
-// Load environment variables from .env file
+// Load environment variables
 dotenv.config();
 
-// Create Express app and HTTP server
+// Initialize Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
 
-// ✅ Allowed frontend origins
+// Define allowed frontend origins
 const allowedOrigins = [
   "https://chat-app-client-beryl-five.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
@@ -22,7 +23,7 @@ const allowedOrigins = [
   "http://localhost:5173",
 ];
 
-// 🛡️ CORS settings for Express
+// Apply CORS policy for Express
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -37,10 +38,10 @@ app.use(
   })
 );
 
-// 📦 JSON parsing
+// Enable JSON parsing
 app.use(express.json());
 
-// 🌐 MongoDB connection
+// Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -52,17 +53,15 @@ mongoose
     process.exit(1);
   });
 
-// 📂 API routes
+// API routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/chatroom", require("./routes/chatroom"));
 app.use("/api/message", require("./routes/message"));
 
-// 🩺 Health check
-app.get("/", (req, res) => {
-  res.send("✅ Server is running");
-});
+// Health check endpoint
+app.get("/", (_, res) => res.send("✅ Server is running"));
 
-// 🔌 Setup Socket.IO
+// Initialize Socket.IO
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -71,61 +70,64 @@ const io = new Server(server, {
   },
 });
 
-// 📡 Socket.IO logic
-const Message = require("./models/Message");
-
+// Socket.IO logic
 io.on("connection", (socket) => {
-  console.log("🔌 Client connected:", socket.id);
+  console.log("🔌 New client connected:", socket.id);
 
+  // Join a chat room
   socket.on("joinRoom", (roomId) => {
     if (roomId) {
       socket.join(roomId);
-      console.log(`📥 Joined room: ${roomId}`);
+      console.log(`📥 Client ${socket.id} joined room: ${roomId}`);
     }
   });
 
-  socket.on("sendMessage", async ({ roomId, sender, text }) => {
-    if (roomId && sender && text) {
-      try {
-        const newMessage = await Message.create({
-          roomId,
-          sender,
-          text,
-          timestamp: new Date().toISOString(),
-          status: "sent"
-        });
+  // Handle new message
+  socket.on("sendMessage", async ({ roomId, sender, text, replyTo }) => {
+    if (!roomId || !sender || !text) return;
 
-        io.to(roomId).emit("receiveMessage", newMessage);
-        console.log("📤 Sent message to room:", roomId);
-      } catch (err) {
-        console.error("❌ Failed to save message:", err.message);
-      }
+    try {
+      const message = await Message.create({
+        roomId,
+        sender,
+        text,
+        replyTo,
+        timestamp: new Date().toISOString(),
+        status: "sent",
+      });
+
+      // Emit to everyone in the room (including sender)
+      io.to(roomId).emit("receiveMessage", message);
+      console.log(`📤 Message sent in room ${roomId}`);
+    } catch (err) {
+      console.error("❌ Error sending message:", err.message);
     }
   });
 
+  // Optional: Update message status (seen/read)
   socket.on("messageSeen", async ({ messageId }) => {
-    if (messageId) {
-      try {
-        const updatedMessage = await Message.findByIdAndUpdate(
-          messageId,
-          { status: "seen" },
-          { new: true }
-        );
-        if (updatedMessage) {
-          io.emit("messageUpdated", updatedMessage);
-        }
-      } catch (err) {
-        console.error("❌ Failed to update message status:", err.message);
+    try {
+      const updated = await Message.findByIdAndUpdate(
+        messageId,
+        { status: "seen" },
+        { new: true }
+      );
+      if (updated) {
+        io.to(updated.roomId).emit("messageUpdated", updated);
+        console.log(`👀 Message seen: ${messageId}`);
       }
+    } catch (err) {
+      console.error("❌ Error updating message status:", err.message);
     }
   });
 
+  // Handle disconnection
   socket.on("disconnect", () => {
     console.log("❌ Client disconnected:", socket.id);
   });
 });
 
-// 🚀 Start server
+// Start the server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
