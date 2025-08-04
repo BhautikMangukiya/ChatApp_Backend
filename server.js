@@ -1,5 +1,4 @@
 // server.js
-
 const express = require("express");
 const http = require("http");
 const mongoose = require("mongoose");
@@ -7,30 +6,27 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const { Server } = require("socket.io");
 
-// Load env variables
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 
-// 🔐 Allowed frontend origins
+// Allowed frontend origins
 const allowedOrigins = [
   "https://chat-app-client-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-app-client-5jni88g2s-bhautiks-projects-e9693610.vercel.app", 
+  "https://chat-app-client-5jni88g2s-bhautiks-projects-e9693610.vercel.app",
   "http://localhost:5173"
 ];
 
-
-
-// ✅ Setup CORS middleware for Express
+// CORS for Express
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.log("❌ CORS blocked for:", origin);
+        console.warn("❌ CORS blocked for:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
@@ -38,61 +34,48 @@ app.use(
   })
 );
 
-// ✅ Parse JSON requests
 app.use(express.json());
 
-// ✅ Connect to MongoDB
+// MongoDB connection
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err.message);
     process.exit(1);
   });
 
-// ✅ Load API routes
+// API routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/chatroom", require("./routes/chatroom"));
 app.use("/api/message", require("./routes/message"));
 
-// ✅ Default health check route
-app.get("/", (req, res) => {
-  res.send("✅ Server is running");
-});
+// Health check
+app.get("/", (req, res) => res.send("✅ Server is running"));
 
-// ✅ Setup Socket.IO
+// Socket.IO setup
 const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+  cors: { origin: allowedOrigins, methods: ["GET", "POST"], credentials: true },
 });
 
 io.on("connection", (socket) => {
-  console.log("🔌 New client connected:", socket.id);
+  console.log("🔌 Client connected:", socket.id);
 
   socket.on("joinRoom", (roomId) => {
-    if (roomId) {
-      socket.join(roomId);
-      console.log(`📥 Joined room: ${roomId}`);
-    }
+    if (!roomId) return;
+    socket.join(roomId);
+    console.log(`📥 ${socket.id} joined room: ${roomId}`);
   });
 
-  socket.on("sendMessage", ({ roomId, sender, text }) => {
-    if (roomId && sender && text) {
-      const message = {
-        roomId,
-        sender,
-        text,
-        timestamp: new Date().toISOString(),
-      };
-      io.to(roomId).emit("receiveMessage", message);
-      console.log("📤 Message sent to room:", roomId);
-    }
+  socket.on("sendMessage", (msg) => {
+    if (!msg?.roomId || !msg?.sender || !msg?.text) return;
+    const messageData = {
+      roomId: msg.roomId,
+      sender: msg.sender,
+      text: msg.text,
+      timestamp: new Date(),
+    };
+    io.to(msg.roomId).emit("receiveMessage", messageData);
   });
 
   socket.on("disconnect", () => {
@@ -100,8 +83,5 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ Start server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server listening on port ${PORT}`);
-});
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
