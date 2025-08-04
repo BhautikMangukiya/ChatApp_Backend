@@ -19,8 +19,10 @@ const allowedOrigins = [
   "https://chat-app-client-beryl-five.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-cnvz786wy-bhautiks-projects-e9693610.vercel.app",
-  "http://localhost:5173", // Local development
+  "https://chat-app-client-a4e2sbgnk-bhautiks-projects-e9693610.vercel.app", // ✅ New one
+  "http://localhost:5173",
 ];
+
 
 // 🛡️ Apply CORS settings for Express
 app.use(
