@@ -8,17 +8,12 @@ const messageSchema = new mongoose.Schema({
     required: true
   },
   sender: {
-    type: String,
+    type: String, // Jay or Bhautik
     required: true
   },
   text: {
     type: String,
     required: true
-  },
-  status: {
-    type: String,
-    enum: ['sent', 'delivered', 'seen'],
-    default: 'sent' // default when first created
   },
   timestamp: {
     type: Date,
