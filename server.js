@@ -14,17 +14,15 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// ✅ Updated allowed frontend origins
+// ✅ Allowed frontend origins
 const allowedOrigins = [
   "https://chat-app-client-beryl-five.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-777434ay5-bhautiks-projects-e9693610.vercel.app",
-  "http://localhost:5173", // for local development
+  "http://localhost:5173",
 ];
 
-
-
-// 🛡️ Apply CORS settings for Express
+// 🛡️ CORS settings for Express
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -39,7 +37,7 @@ app.use(
   })
 );
 
-// 📦 Middleware to parse JSON
+// 📦 JSON parsing
 app.use(express.json());
 
 // 🌐 MongoDB connection
@@ -64,7 +62,7 @@ app.get("/", (req, res) => {
   res.send("✅ Server is running");
 });
 
-// 🔌 Setup Socket.IO server with matching CORS settings
+// 🔌 Setup Socket.IO
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -73,7 +71,9 @@ const io = new Server(server, {
   },
 });
 
-// 📡 Real-time communication via Socket.IO
+// 📡 Socket.IO logic
+const Message = require("./models/Message");
+
 io.on("connection", (socket) => {
   console.log("🔌 Client connected:", socket.id);
 
@@ -84,16 +84,39 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("sendMessage", ({ roomId, sender, text }) => {
+  socket.on("sendMessage", async ({ roomId, sender, text }) => {
     if (roomId && sender && text) {
-      const message = {
-        roomId,
-        sender,
-        text,
-        timestamp: new Date().toISOString(),
-      };
-      io.to(roomId).emit("receiveMessage", message);
-      console.log("📤 Sent message to room:", roomId);
+      try {
+        const newMessage = await Message.create({
+          roomId,
+          sender,
+          text,
+          timestamp: new Date().toISOString(),
+          status: "sent"
+        });
+
+        io.to(roomId).emit("receiveMessage", newMessage);
+        console.log("📤 Sent message to room:", roomId);
+      } catch (err) {
+        console.error("❌ Failed to save message:", err.message);
+      }
+    }
+  });
+
+  socket.on("messageSeen", async ({ messageId }) => {
+    if (messageId) {
+      try {
+        const updatedMessage = await Message.findByIdAndUpdate(
+          messageId,
+          { status: "seen" },
+          { new: true }
+        );
+        if (updatedMessage) {
+          io.emit("messageUpdated", updatedMessage);
+        }
+      } catch (err) {
+        console.error("❌ Failed to update message status:", err.message);
+      }
     }
   });
 
