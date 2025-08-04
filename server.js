@@ -50,14 +50,11 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 // ✅ API Routes
-try {
-  app.use("/api/auth", require("./routes/auth"));
-  app.use("/api/chatroom", require("./routes/chatroom"));
-  app.use("/api/message", require("./routes/message"));
-} catch (err) {
-  console.error("🚨 Route error in file:", err);
-  throw err;
-}
+console.log("✅ Registering routes...");
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/chatroom", require("./routes/chatroom"));
+app.use("/api/message", require("./routes/message"));
+console.log("✅ All routes registered.");
 
 
 // ✅ Health Check
