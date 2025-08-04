@@ -11,16 +11,15 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// ✅ Include all active Vercel deployments here
+// ✅ List of allowed frontend origins (Vercel deployments)
 const allowedOrigins = [
   "https://chat-app-client-jc6cd3cph-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-app-client-76n2gfh2c-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-app-client-bjyamuy2j-bhautiks-projects-e9693610.vercel.app"
+  "https://chat-app-client-45642a0ct-bhautiks-projects-e9693610.vercel.app"
 ];
 
-// ✅ Full CORS support including preflight
+// ✅ CORS middleware with preflight support
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -31,38 +30,37 @@ app.use(cors({
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
+app.options("*", cors()); // Handle preflight
 
-app.options("*", cors()); // Preflight
-
+// ✅ Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Connect to MongoDB
+// ✅ MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
   console.log("✅ MongoDB connected");
-}).catch(err => {
-  console.error("❌ MongoDB connection error:", err);
+}).catch((err) => {
+  console.error("❌ MongoDB connection failed:", err);
 });
 
-// ✅ API Routes
-console.log("✅ Registering routes...");
+// ✅ API routes
+console.log("✅ Registering API routes...");
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/chatroom", require("./routes/chatroom"));
 app.use("/api/message", require("./routes/message"));
-console.log("✅ All routes registered.");
+console.log("✅ API routes registered");
 
-
-// ✅ Health Check
+// ✅ Health check
 app.get("/", (req, res) => {
   res.send("🚀 DuoChat Backend is running");
 });
 
-// ✅ Socket.IO server
+// ✅ Socket.IO setup
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -73,11 +71,11 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log("🟢 New Socket.IO connection:", socket.id);
+  console.log("🟢 New connection:", socket.id);
 
   socket.on("joinRoom", (roomId) => {
     socket.join(roomId);
-    console.log(`📦 User ${socket.id} joined room ${roomId}`);
+    console.log(`📦 Socket ${socket.id} joined room ${roomId}`);
   });
 
   socket.on("sendMessage", (data) => {
@@ -85,11 +83,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("🔴 Socket.IO disconnected:", socket.id);
+    console.log("🔴 Disconnected:", socket.id);
   });
 });
 
-// ✅ Start Server
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
