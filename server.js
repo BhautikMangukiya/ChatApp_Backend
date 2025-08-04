@@ -45,8 +45,8 @@ mongoose
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // Routes (Replace with your own routes)
-const authRoutes = require("./routes/authRoutes");
-const chatroomRoutes = require("./routes/chatroomRoutes");
+const authRoutes = require("./routes/auth");
+const chatroomRoutes = require("./routes/chatroom");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/chatroom", chatroomRoutes);
