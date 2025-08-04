@@ -13,9 +13,9 @@ const server = http.createServer(app);
 
 // ✅ Include all active Vercel deployments here
 const allowedOrigins = [
-  "https://chat-app-client-beryl-five.vercel.app",
+  "https://chat-app-client-jc6cd3cph-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-git-main-bhautiks-projects-e9693610.vercel.app",
-  "https://chat-app-client-cnvz786wy-bhautiks-projects-e9693610.vercel.app",
+  "https://chat-app-client-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-76n2gfh2c-bhautiks-projects-e9693610.vercel.app",
   "https://chat-app-client-bjyamuy2j-bhautiks-projects-e9693610.vercel.app"
 ];
